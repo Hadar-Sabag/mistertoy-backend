@@ -107,6 +107,7 @@ app.put('/api/toy/:toyId', async (req, res) => {
 })
 
 app.delete('/api/toy/:toyId', async (req, res) => {
+    console.log("req: ", req.cookies)
     const loggedinUser = userService.validateToken(req.cookies.loginToken)
     console.log("loggedinUser: ", loggedinUser)
     if (!loggedinUser) return res.status(401).send('Cannot remove toy')

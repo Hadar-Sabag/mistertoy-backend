@@ -1,33 +1,5 @@
 [
     {
-        "name": "hadar",
-        "price": 48,
-        "labels": [
-            "Doll",
-            "Baby"
-        ],
-        "_id": "16Pk2",
-        "createdAt": 1746548628580,
-        "inStock": true
-    },
-    {
-        "_id": "t101",
-        "name": "Talking Doll",
-        "price": 123,
-        "labels": [
-            "Doll",
-            "Battery Powered",
-            "Baby",
-            "On wheels"
-        ],
-        "createdAt": 1631031801011,
-        "inStock": false,
-        "owner": {
-            "_id": "u101",
-            "fullname": "Puki Ja"
-        }
-    },
-    {
         "_id": "t102",
         "name": "Wooden Puzzle Set",
         "price": 50,
