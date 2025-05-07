@@ -1,130 +1,151 @@
 import { ObjectId } from 'mongodb'
-
 import { dbService } from '../../services/db.service.js'
-import { logger } from '../../services/logger.service.js'
+import { loggerService } from '../../services/logger.service.js'
 import { utilService } from '../../services/util.service.js'
+
+const PAGE_SIZE = 4
 
 export const toyService = {
     query,
-    get,
+    getById,
     remove,
-    save,
+    add,
+    update,
+    // addMsg,
+    // removeMsg,
 }
 
-function query(filterBy = {}) {
-    let filteredToys = toys
-    if (filterBy.txt) {
-        const regExp = new RegExp(filterBy.txt, 'i')
-        filteredToys = filteredToys.filter(toy => regExp.test(toy.name))
-    }
-    if (filterBy.inStock) {
-        filteredToys = filteredToys.filter(
-            toy => toy.inStock === JSON.parse(filterBy.inStock)
-        )
-    }
-    if (filterBy.labels && filterBy.labels.length) {
-        filteredToys = filteredToys.filter(
-            toy => filterBy.labels.every(label => toy.labels.includes(label))
-            // filterBy.labels.some(label => toy.labels.includes(label))
-        )
-    }
+async function query(filterBy = {}) {
+    const limitSize = filterBy.fetchAll ? Infinity : PAGE_SIZE
 
-    // const sortBy = filterBy.sortBy
-
-    // if (sortBy.type) {
-    //     filteredToys.sort((toy1, toy2) => {
-    //         const sortDirection = +sortBy.sortDir
-    //         if (sortBy.type === 'name') {
-    //             return toy1.name.localeCompare(toy2.name) * sortDirection
-    //         } else if (sortBy.type === 'price' || sortBy.type === 'createdAt') {
-    //             return (toy1[sortBy.type] - toy2[sortBy.type]) * sortDirection
-    //         }
-    //     })
-    // }
-
-
-    if (filterBy.sortBy) {
-        const { sortBy, sortDir = 1 } = filterBy
-        console.log("filterBy: ", filterBy)
-        filteredToys.sort((a, b) => {
-            if (typeof a[sortBy] === 'string') {
-                return a[sortBy].localeCompare(b[sortBy]) * sortDir
-            } else {
-                return (a[sortBy] - b[sortBy]) * sortDir
-            }
-        })
-    }
-
-    const filteredToysLength = filteredToys.length
-
-    // if (filterBy.pageIdx !== undefined) {
-    //     const startIdx = filterBy.pageIdx * PAGE_SIZE
-    //     filteredToys = filteredToys.slice(startIdx, startIdx + PAGE_SIZE)
-    // }
-
-    return Promise.resolve(getMaxPage(filteredToysLength))
-        .then(maxPage => {
-            return { toys: filteredToys, maxPage }
-        })
-}
-
-async function get(toyId) {
     try {
-        const toy = toys.find(toy => toy._id === toyId)
+        const { filterCriteria, sortCriteria, skip } = _buildCriteria(filterBy)
+
+        const collection = await dbService.getCollection('toy')
+        const filteredToys = await collection
+            .find(filterCriteria)
+            .collation({'locale':'en'})
+            .sort(sortCriteria)
+            .skip(skip)
+            .limit(limitSize)
+            .toArray()
+            
+        const maxPage = Math.ceil(filteredToys.length / PAGE_SIZE)
+
+        return { toys: filteredToys, maxPage }
+    } catch (error) {
+        loggerService.error('cannot find toys', error)
+        throw error
+    }
+}
+
+async function getById(toyId) {
+    try {
+        const collection = await dbService.getCollection('toy')
+        const toy = collection.findOne({
+            _id: ObjectId.createFromHexString(toyId),
+        })
         return toy
-    } catch (err) {
-        console.log('failed to get toy:', err)
-        throw err
+    } catch (error) {
+        loggerService.error(`while finding toy ${toyId}`, error)
+        throw error
     }
 }
 
 async function remove(toyId) {
     try {
-        const idx = toys.findIndex(toy => toy._id === toyId)
-        if (idx === -1) return new Error('No such toy')
-        toys.splice(idx, 1)
-    console.log("toys: ", toys)
-        await _saveToysToFile()
+        const collection = await dbService.getCollection('toy')
+        await collection.deleteOne({ _id: ObjectId.createFromHexString(toyId) })
     } catch (error) {
-        console.log('failed to delete toy:', err)
-        throw err
+        loggerService.error(`cannot remove toy ${toyId}`, error)
+        throw error
     }
 }
 
-
-async function save(toy) {
+async function add(toy) {
     try {
-        if (toy._id) {
-            const idx = toys.findIndex(currToy => currToy._id === toy._id)
-            toys[idx] = { ...toys[idx], ...toy }
-        } else {
-            toy._id = _makeId()
-            toy.createdAt = Date.now()
-            toy.inStock = true
-            toys.unshift(toy)
-        }
-        await _saveToysToFile()
+        toy.inStock = true
+        const collection = await dbService.getCollection('toy')
+        await collection.insertOne(toy)
         return toy
-
     } catch (error) {
-        console.log('failed to save toy:', err)
-        throw err
+        loggerService.error('cannot insert toy', error)
+        throw error
     }
 }
 
-function getMaxPage(filteredToysLength) {
-    if (filteredToysLength) {
-        return Promise.resolve(Math.ceil(filteredToysLength / PAGE_SIZE))
+async function update(toy) {
+    try {
+        const { name, price, labels } = toy
+        const toyToUpdate = {
+            name,
+            price,
+            labels,
+        }
+        const collection = await dbService.getCollection('toy')
+        await collection.updateOne(
+            { _id: ObjectId.createFromHexString(toy._id) },
+            { $set: toyToUpdate }
+        )
+        return toy
+    } catch (error) {
+        loggerService.error(`cannot update toy ${toy._id}`, error)
+        throw error
     }
-    return Promise.resolve(Math.ceil(toys.length / PAGE_SIZE))
 }
 
-function _makeId(length = 5) {
-    let text = ''
-    const possible =
-        'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
-    for (let i = 0; i < length; i++) {
-        text += possible.charAt(Math.floor(Math.random() * possible.length))
+// async function addMsg(toyId, msg) {
+//     try {
+//         msg.id = utilService.makeId()
+//         const collection = await dbService.getCollection('toy')
+//         await collection.updateOne(
+//             { _id: ObjectId.createFromHexString(toyId) },
+//             { $push: { msgs: msg } }
+//         )
+//         return msg
+//     } catch (error) {
+//         loggerService.error(`cannot add message to toy ${toyId}`, error)
+//         throw error
+//     }
+// }
+
+// async function removeMsg(toyId, msgId) {
+//     try {
+//         const collection = await dbService.getCollection('toy')
+//         await collection.updateOne(
+//             { _id: ObjectId.createFromHexString(toyId) },
+//             { $pull: { msgs: { id: msgId } } }
+//         )
+//         return msgId
+//     } catch (error) {
+//         loggerService.error(`cannot remove message from toy ${toyId}`, error)
+//         throw error
+//     }
+// }
+
+function _buildCriteria(filterBy) {
+    const filterCriteria = {}
+
+    if (filterBy.txt) {
+        filterCriteria.name = { $regex: filterBy.txt, $options: 'i' }
     }
-    return text
+    if (filterBy.inStock) {
+        filterCriteria.inStock = JSON.parse(filterBy.inStock)
+    }
+    if (filterBy.labels && filterBy.labels.length) {
+        filterCriteria.labels = { $all: filterBy.labels }
+    }
+    const sortCriteria = {}
+
+    const sortBy = filterBy.sortBy
+    if (sortBy.type) {
+        const sortDirection = +sortBy.sortDir
+        sortCriteria[sortBy.type] = sortDirection
+    } else sortCriteria.createdAt = -1
+    
+    const skip =
+        filterBy.pageIdx !== undefined ? filterBy.pageIdx * PAGE_SIZE : 0
+    console.log({ filterCriteria, sortCriteria, skip })
+
+    return { filterCriteria, sortCriteria, skip }
 }

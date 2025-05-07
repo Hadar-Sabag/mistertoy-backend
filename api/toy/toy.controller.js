@@ -1,93 +1,98 @@
-import { carService } from './car.service.js'
-import { logger } from '../../services/logger.service.js'
+import { loggerService } from '../../services/logger.service.js'
+import { toyService } from './toy.service.js'
 
-export async function getCars(req, res) {
+export async function getToys(req, res) {
     try {
+        const { txt, inStock, labels, pageIdx, sortBy, fetchAll = false } = req.query
         const filterBy = {
-            txt: req.query.txt || '',
+            txt: txt || '',
+            inStock: inStock || null,
+            labels: labels || [],
+            pageIdx: +pageIdx || 0,
+            sortBy: sortBy || { type: '', sortDir: 1 },
+            fetchAll: fetchAll === 'true',
         }
-        const cars = await carService.query(filterBy)
-        res.json(cars)
-    } catch (err) {
-        logger.error('Failed to get cars', err)
-        res.status(500).send({ err: 'Failed to get cars' })
+        const toys = await toyService.query(filterBy)
+        res.send(toys)
+    } catch (error) {
+        loggerService.error('Cannot load toys', error)
+        res.status(500).send('Cannot load toys')
     }
 }
 
-export async function getCarById(req, res) {
+export async function getToyById(req, res) {
     try {
-        const carId = req.params.id
-        const car = await carService.getById(carId)
-        res.json(car)
-    } catch (err) {
-        logger.error('Failed to get car', err)
-        res.status(500).send({ err: 'Failed to get car' })
+        const { toyId } = req.params
+        const toy = await toyService.getById(toyId)
+        res.send(toy)
+    } catch (error) {
+        loggerService.error('Cannot get toy', error)
+        res.status(500).send(error)
     }
 }
 
-export async function addCar(req, res) {
-    const { loggedinUser } = req
+export async function addToy(req, res) {
+    const { body: toy } = req
 
     try {
-        const car = req.body
-        car.owner = loggedinUser
-        const addedCar = await carService.add(car)
-        res.json(addedCar)
-    } catch (err) {
-        logger.error('Failed to add car', err)
-        res.status(500).send({ err: 'Failed to add car' })
+        const addedToy = await toyService.add(toy)
+        res.send(addedToy)
+    } catch (error) {
+        loggerService.error('Cannot add toy', error)
+        res.status(500).send('Cannot add toy')
     }
 }
 
-export async function updateCar(req, res) {
+export async function updateToy(req, res) {
+    const { body: toy } = req
+
     try {
-        const car = { ...req.body, _id: req.params.id }
-        const updatedCar = await carService.update(car)
-        res.json(updatedCar)
-    } catch (err) {
-        logger.error('Failed to update car', err)
-        res.status(500).send({ err: 'Failed to update car' })
+        const updatedToy = await toyService.update(toy)
+        res.send(updatedToy)
+    } catch (error) {
+        loggerService.error('Cannot update toy', error)
+        res.status(500).send('Cannot update toy')
     }
 }
 
-export async function removeCar(req, res) {
+export async function removeToy(req, res) {
     try {
-        const carId = req.params.id
-        const deletedCount = await carService.remove(carId)
-        res.send(`${deletedCount} cars removed`)
-    } catch (err) {
-        logger.error('Failed to remove car', err)
-        res.status(500).send({ err: 'Failed to remove car' })
+        const { toyId } = req.params
+        await toyService.remove(toyId)
+        res.send()
+    } catch (error) {
+        loggerService.error('Cannot delete toy', error)
+        res.status(500).send('Cannot delete toy, ' + error)
     }
 }
 
-export async function addCarMsg(req, res) {
-    const { loggedinUser } = req
-    try {
-        const carId = req.params.id
-        const msg = {
-            txt: req.body.txt,
-            by: loggedinUser,
-            createdAt: Date.now(),
-        }
-        const savedMsg = await carService.addCarMsg(carId, msg)
-        res.json(savedMsg)
-    } catch (err) {
-        logger.error('Failed to update car', err)
-        res.status(500).send({ err: 'Failed to update car' })
-    }
-}
+// export async function addToyMsg(req, res) {
+//     const { toyId } = req.params
+//     const { txt } = req.body
+    
+//     const { loggedinUser } = req
+//     const { _id, fullname } = loggedinUser
 
-export async function removeCarMsg(req, res) {
-    const { loggedinUser } = req
-    try {
-        const carId = req.params.id
-        const { msgId } = req.params
+//     try {
+//         const msg = {
+//             txt,
+//             by: { _id, fullname },
+//         }
+//         const addedMsg = await toyService.addMsg(toyId, msg)
+//         res.send(addedMsg)
+//     } catch (error) {
+//         loggerService.error('Cannot add message to toy', error)
+//         res.status(500).send('Cannot add message to toy')
+//     }
+// }
 
-        const removedId = await carService.removeCarMsg(carId, msgId)
-        res.send(removedId)
-    } catch (err) {
-        logger.error('Failed to remove car msg', err)
-        res.status(500).send({ err: 'Failed to remove car msg' })
-    }
-}
+// export async function removeToyMsg(req, res) {
+//     try {
+//         const { toyId, msgId } = req.params
+//         await toyService.removeMsg(toyId, msgId)
+//         res.send(msgId)
+//     } catch (error) {
+//         loggerService.error('Cannot delete message from toy', error)
+//         res.status(500).send('Cannot delete message from toy')
+//     }
+// }
