@@ -22,6 +22,9 @@ async function query(filterBy = {}) {
         const { filterCriteria, sortCriteria, skip } = _buildCriteria(filterBy)
 
         const collection = await dbService.getCollection('toy')
+
+        const totalCount = await collection.countDocuments(filterCriteria)
+
         const filteredToys = await collection
             .find(filterCriteria)
             .collation({'locale':'en'})
@@ -30,7 +33,7 @@ async function query(filterBy = {}) {
             .limit(limitSize)
             .toArray()
             
-        const maxPage = Math.ceil(filteredToys.length / PAGE_SIZE)
+        const maxPage = Math.ceil(totalCount / PAGE_SIZE)
 
         return { toys: filteredToys, maxPage }
     } catch (error) {
@@ -76,11 +79,13 @@ async function add(toy) {
 
 async function update(toy) {
     try {
-        const { name, price, labels } = toy
+        const { name, price, labels, imgUrl, inStock } = toy
         const toyToUpdate = {
             name,
             price,
             labels,
+            imgUrl,
+            inStock
         }
         const collection = await dbService.getCollection('toy')
         await collection.updateOne(

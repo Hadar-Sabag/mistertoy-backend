@@ -1,6 +1,5 @@
 [
     {
-        "_id": "t102",
         "name": "Wooden Puzzle Set",
         "price": 50,
         "labels": [
@@ -15,7 +14,6 @@
         }
     },
     {
-        "_id": "t103",
         "name": "Remote Control Car",
         "price": 80,
         "labels": [
@@ -31,7 +29,6 @@
         }
     },
     {
-        "_id": "t104",
         "name": "Colorful Building Blocks",
         "price": 30,
         "labels": [
@@ -46,7 +43,6 @@
         }
     },
     {
-        "_id": "t105",
         "name": "Artistic Paint Set",
         "price": 50,
         "labels": [
@@ -60,7 +56,6 @@
         }
     },
     {
-        "_id": "t106",
         "name": "Dancing Robot",
         "price": 65,
         "labels": [
@@ -74,7 +69,6 @@
         }
     },
     {
-        "_id": "t107",
         "name": "Miniature Train Set",
         "price": 40,
         "labels": [
@@ -89,7 +83,6 @@
         }
     },
     {
-        "_id": "t108",
         "name": "Soft Plush Teddy Bear",
         "price": 20,
         "labels": [
@@ -103,7 +96,6 @@
         }
     },
     {
-        "_id": "t109",
         "name": "3D Jigsaw Puzzle",
         "price": 35,
         "labels": [
@@ -117,7 +109,6 @@
         }
     },
     {
-        "_id": "t110",
         "name": "Remote Control Helicopter",
         "price": 95,
         "labels": [
@@ -132,7 +123,6 @@
         }
     },
     {
-        "_id": "t111",
         "name": "Educational Alphabet Blocks",
         "price": 25,
         "labels": [
@@ -146,7 +136,6 @@
         }
     },
     {
-        "_id": "t113",
         "name": "Wooden Play Kitchennnnn",
         "price": 75,
         "labels": [
@@ -161,7 +150,6 @@
         }
     },
     {
-        "_id": "t114",
         "name": "Racing Car Set",
         "price": 70,
         "labels": [
@@ -175,7 +163,6 @@
         }
     },
     {
-        "_id": "t115",
         "name": "Glow-in-the-Dark Stars",
         "price": 15,
         "labels": [
@@ -189,7 +176,6 @@
         }
     },
     {
-        "_id": "t116",
         "name": "Electronic Drum Kit",
         "price": 85,
         "labels": [
@@ -203,7 +189,6 @@
         }
     },
     {
-        "_id": "t117",
         "name": "Outdoor Playhouse",
         "price": 120,
         "labels": [
