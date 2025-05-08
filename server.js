@@ -4,7 +4,6 @@ import express from 'express'
 import { authRoutes } from './api/auth/auth.routes.js'
 import { toyRoutes } from './api/toy/toy.routes.js'
 import { userRoutes } from './api/user/user.routes.js'
-import { Server } from 'socket.io'
 import http from 'http'
 import { setupSocketAPI } from './services/socket.service.js' 
 
