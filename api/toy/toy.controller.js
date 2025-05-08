@@ -66,33 +66,33 @@ export async function removeToy(req, res) {
     }
 }
 
-// export async function addToyMsg(req, res) {
-//     const { toyId } = req.params
-//     const { txt } = req.body
+export async function addToyMsg(req, res) {
+    const { toyId } = req.params
+    const { txt } = req.body
     
-//     const { loggedinUser } = req
-//     const { _id, fullname } = loggedinUser
+    const { loggedinUser } = req
+    const { _id, fullname } = loggedinUser
 
-//     try {
-//         const msg = {
-//             txt,
-//             by: { _id, fullname },
-//         }
-//         const addedMsg = await toyService.addMsg(toyId, msg)
-//         res.send(addedMsg)
-//     } catch (error) {
-//         loggerService.error('Cannot add message to toy', error)
-//         res.status(500).send('Cannot add message to toy')
-//     }
-// }
+    try {
+        const msg = {
+            txt,
+            by: { _id, fullname },
+        }
+        const addedMsg = await toyService.addMsg(toyId, msg)
+        res.send(addedMsg)
+    } catch (error) {
+        loggerService.error('Cannot add message to toy', error)
+        res.status(500).send('Cannot add message to toy')
+    }
+}
 
-// export async function removeToyMsg(req, res) {
-//     try {
-//         const { toyId, msgId } = req.params
-//         await toyService.removeMsg(toyId, msgId)
-//         res.send(msgId)
-//     } catch (error) {
-//         loggerService.error('Cannot delete message from toy', error)
-//         res.status(500).send('Cannot delete message from toy')
-//     }
-// }
+export async function removeToyMsg(req, res) {
+    try {
+        const { toyId, msgId } = req.params
+        await toyService.removeMsg(toyId, msgId)
+        res.send(msgId)
+    } catch (error) {
+        loggerService.error('Cannot delete message from toy', error)
+        res.status(500).send('Cannot delete message from toy')
+    }
+}

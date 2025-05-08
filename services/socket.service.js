@@ -1,4 +1,5 @@
 import { Server } from 'socket.io'
+import { toyService } from '../api/toy/toy.service.js'
 
 let io = null
 
@@ -12,13 +13,23 @@ export function setupSocketAPI(server) {
     io.on('connection', (socket) => {
         console.log('A user connected to socket server')
 
-        socket.on('chat-join', (toyId) => {
+        socket.on('chat-join', async (toyId) => {
             socket.join(toyId)
             console.log(`User joined room: ${toyId}`)
+            const toy = await toyService.getById(toyId)
+            const msgs = toy.msgs || []
+            console.log(`Sending chat history with ${msgs.length} messages`)
+            socket.emit('chat-history', msgs)
         })
 
-        socket.on('chat-msg', (msg) => {
+
+        socket.on('chat-msg', async (msg) => {
             console.log('Message received:', msg)
+            await toyService.addMsg(msg.toyId, {
+                txt: msg.txt,
+                from: msg.from,
+                createdAt: Date.now()
+            })
             io.to(msg.toyId).emit('chat-msg', msg)
         })
 
