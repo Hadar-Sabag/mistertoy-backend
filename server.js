@@ -1,11 +1,17 @@
 import cookieParser from 'cookie-parser'
 import cors from 'cors'
 import express from 'express'
-import path from 'path'
+import { authRoutes } from './api/auth/auth.routes.js'
+import { toyRoutes } from './api/toy/toy.routes.js'
+import { userRoutes } from './api/user/user.routes.js'
+import { Server } from 'socket.io'
+import http from 'http'
+import { setupSocketAPI } from './services/socket.service.js' 
 
-import { loggerService } from './services/logger.service.js'
 
 const app = express()
+const server = http.createServer(app)
+
 
 // App Configuration
 app.use(cookieParser()) // for res.cookies
@@ -27,13 +33,11 @@ if (process.env.NODE_ENV === 'production') {
     app.use(cors(corsOptions))
 }
 
-import { authRoutes } from './api/auth/auth.routes.js'
-import { toyRoutes } from './api/toy/toy.routes.js'
-import { userRoutes } from './api/user/user.routes.js'
-
 app.use('/api/toy', toyRoutes)
 app.use('/api/auth', authRoutes)
 app.use('/api/user', userRoutes)
+
+setupSocketAPI(server)
 
 // Fallback
 // app.get('/*all', (req, res) => {
@@ -42,6 +46,11 @@ app.use('/api/user', userRoutes)
 
 // Listen will always be the last line in our server!
 const port = process.env.PORT || 3031
-app.listen(port, () => {
+// app.listen(port, () => {
+//     console.log(`Server listening on port http://127.0.0.1:${port}/`)
+// })
+
+server.listen(port, () => {
     console.log(`Server listening on port http://127.0.0.1:${port}/`)
 })
+
